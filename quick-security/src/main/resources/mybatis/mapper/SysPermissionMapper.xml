@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.security.dao.SysPermissionMapper">
+
+    <!-- where -->
+    <sql id="where">
+        <where>
+            <!-- 默认 -->
+            <if test="1==1">
+                and is_del = '0'
+            </if>
+            <if test="params.title != null and params.title != ''">
+                and title like concat('%', #{params.title}, '%')
+            </if>
+            <if test="params.type != null and params.type != ''">
+                and `type` = #{params.type}
+            </if>
+            <if test="params.pid != null and params.pid != ''">
+                and parent_id = #{params.pid}
+            </if>
+            <if test="params.startdate != null and params.startdate != ''">
+                and create_time &gt;= #{params.startdate}
+            </if>
+            <if test="params.enddate != null and params.enddate != ''">
+                and create_time &lt;= #{params.enddate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 删除资源，逻辑 -->
+    <update id="deletePermission">
+		update sys_permission set is_del = '1' where id = #{resId}
+	</update>
+
+    <!-- 根据资源名 查询 -->
+    <select id="selectPermissionByPname" resultType="SysPermission">
+		select * from sys_permission where title = #{resName}
+	</select>
+
+    <!-- 根据用户ID 查询菜单 -->
+    <select id="selectMenusByUserId" resultType="SysPermission">
+		SELECT DISTINCT p.* FROM sys_user u 
+		INNER JOIN sys_user_role ur ON u.id=ur.user_id 
+		INNER JOIN sys_role r ON ur.role_id=r.id 
+		INNER JOIN sys_role_permission rp ON r.id=rp.role_id 
+		INNER JOIN sys_permission p ON rp.permission_id=p.id 
+		WHERE p.type != '3'
+		AND p.is_del = '0'
+		AND r.is_del = '0'
+		AND u.id=#{id} 
+		order by p.sort asc
+	</select>
+
+    <!-- 根据会员ID 查询菜单 -->
+    <select id="selectMenusByMemberId" resultType="SysPermission">
+        select distinct p.* from dz_member m
+        inner join dz_member_role mr on m.id = mr.member_id
+        inner join sys_role r on mr.role_id = r.id
+        inner join sys_role_permission rp on r.id = rp.role_id
+        inner join sys_permission p on rp.permission_id = p.id
+        where p.type != '3'
+        and p.is_del = '0'
+        and r.is_del = '0'
+        and m.id = #{id}
+        order by p.sort asc
+    </select>
+
+    <!-- 根据用户ID 查询按钮权限 -->
+    <select id="selectPermissionsByUserId" resultType="SysPermission">
+		SELECT DISTINCT p.* FROM sys_user u 
+		INNER JOIN sys_user_role ur ON u.id=ur.user_id 
+		INNER JOIN sys_role r ON ur.role_id=r.id 
+		INNER JOIN sys_role_permission rp ON r.id=rp.role_id 
+		INNER JOIN sys_permission p ON rp.permission_id=p.id 
+		WHERE p.type='3'
+		AND p.is_del = '0' 
+		AND r.is_del = '0' 
+		AND u.id=#{id}
+	</select>
+
+    <!-- 根据会员ID 查询按钮权限 -->
+    <select id="selectPermissionsByMemberId" resultType="SysPermission">
+		SELECT DISTINCT p.* FROM dz_member m
+		INNER JOIN dz_member_role mr ON m.id=mr.member_id
+		INNER JOIN sys_role r ON mr.role_id=r.id
+		INNER JOIN sys_role_permission rp ON r.id=rp.role_id
+		INNER JOIN sys_permission p ON rp.permission_id=p.id
+		WHERE p.type='3'
+		AND p.is_del = '0'
+		AND r.is_del = '0'
+		AND m.id=#{id}
+	</select>
+
+    <!-- 获取 角色 持有的资源 -->
+    <select id="selectPermissionsByRoleId" resultType="SysPermission">
+  	select p.* from sys_role_permission rp inner join sys_permission p on rp.permission_id = p.id where rp.role_id = #{roleId}
+  </select>
+
+    <!-- 获取 所有资源 -->
+    <select id="selectPermissions" resultType="SysPermission">
+		select * from sys_permission where is_del = '0'
+	</select>
+
+    <!-- 根据PID查询 -->
+    <select id="selectByPid" resultType="SysPermission">
+        select * from sys_permission where parent_id = #{pid}
+    </select>
+
+    <!-- 查询父节点的子节点数 -->
+    <select id="coutByPid" resultType="int">
+        select count(1) from sys_permission where parent_id = #{pid}
+    </select>
+
+    <!-- 修改指定节点的子节点数量 -->
+    <update id="updateSubCount">
+        update sys_permission set sub_count = #{subCount} where id = #{id}
+    </update>
+
+    <!-- 条件查询  统计数量-->
+    <select id="count" resultType="int">
+        select count(1) from sys_permission
+        <include refid="where"/>
+    </select>
+
+    <!-- 条件查询 分页 -->
+    <select id="selectAllPermissions" resultType="SysPermission">
+        select * from sys_permission
+        <include refid="where"/>
+        <if test="params.orderBy != null and params.orderBy != ''">
+            ${params.orderBy}
+        </if>
+        <if test="limit != null and limit != 0">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+</mapper>

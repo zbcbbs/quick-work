@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.logging.dao.SysQuartzLogMapper">
+
+	<!-- where -->
+	<sql id="where">
+		<where>
+			<if test="params.jobName != null and params.jobName != ''">
+				and job_name like concat('%', #{params.jobName}, '%')
+			</if>
+			<if test="params.isSuccess != null and params.isSuccess == 'true'">
+				and is_success = true
+			</if>
+			<if test="params.isSuccess != null and params.isSuccess == 'false'">
+				and is_success = false
+			</if>
+			<if test="params.startdate != null and params.startdate != ''">
+				and create_time &gt;= #{params.startdate}
+			</if>
+			<if test="params.enddate != null and params.enddate != ''">
+				and create_time &lt;= #{params.enddate}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 统计数量 -->
+	<select id="count" resultType="int">
+		select count(1) from sys_quartz_log
+		<include refid="where"/>
+	</select>
+	
+	<!-- 分页 条件查询 -->
+	<select id="selectAllQuartzLogs" resultType="SysQuartzLog">
+		select * from sys_quartz_log
+		<include refid="where"/>
+		<if test="params.orderBy != null and params.orderBy != ''">
+			${params.orderBy}
+		</if>
+		<if test="limit != null and limit != 0">
+			limit #{offset},#{limit}
+		</if>
+	</select>
+</mapper>

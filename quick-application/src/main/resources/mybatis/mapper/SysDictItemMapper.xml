@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.modules.system.dao.SysDictItemMapper">
+
+	<!-- where -->
+	<sql id="where">
+		<where>
+			<!-- 默认 -->
+			<if test="1==1">
+				and is_del = '0'
+			</if>
+			<if test="params.itemValue != null and params.itemValue != ''">
+				and item_value like concat('%', #{params.itemValue}, '%')
+			</if>
+			<if test="params.code != null and params.code != ''">
+				and code = #{params.code}
+			</if>
+		</where>
+	</sql>
+	
+	<!-- 逻辑删除 -->
+	<update id="deleteDictItem">
+		update sys_dict_item set is_del = '1' where id = #{dictId}
+	</update>
+	
+	<!-- 根据 字典项名称 查询 -->
+	<select id="selectDictItemByDname" resultType="SysDictItem">
+		select * from sys_dict_item where code = #{code} and item_value = #{itemName}
+	</select>
+	
+	<!-- 根据 字典项编码 查询 -->
+	<select id="selectDictItemByDcode" resultType="SysDictItem">
+		select * from sys_dict_item where code = #{code} and item_code = #{itemCode}
+	</select>
+	
+	<!-- 条件查询 统计数量 -->
+	<select id="count" resultType="int">
+		select count(1) from sys_dict_item
+		<include refid="where" />
+	</select>
+
+	<!-- 条件查询 分页 -->
+	<select id="selectAllDictItems" resultType="SysDictItem">
+		select * from sys_dict_item
+		<include refid="where" />
+		<if test="params.orderBy != null and params.orderBy != ''">
+			${params.orderBy}
+		</if>
+		<if test="limit != null and limit != 0">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+</mapper>

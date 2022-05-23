@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.logging.dao.SysLogsMapper">
+
+    <!-- where -->
+    <sql id="where">
+        <where>
+            <!-- 默认 -->
+            <if test="1==1">
+                and is_del = '0'
+            </if>
+            <if test="params.content != null and params.content != ''">
+                and content like concat('%', #{params.content}, '%')
+            </if>
+            <if test="params.status != null and params.status != ''">
+                and status = #{params.status}
+            </if>
+            <if test="params.startdate != null and params.startdate != ''">
+                and `time` &gt;= #{params.startdate}
+            </if>
+            <if test="params.enddate != null and params.enddate != ''">
+                and `time` &lt;= #{params.enddate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteLogs">
+		update sys_logs set is_del = '1' where id = #{logsId}
+	</update>
+
+    <!-- 条件查询 统计数量 -->
+    <select id="count" resultType="int">
+        select count(1) from sys_logs
+        <include refid="where"/>
+    </select>
+
+    <!-- 条件查询 分页 -->
+    <select id="selectAllLogs" resultType="SysLogs">
+        select * from sys_logs
+        <include refid="where"/>
+        <if test="params.orderBy != null and params.orderBy != ''">
+            ${params.orderBy}
+        </if>
+        <if test="limit != null and limit != 0">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+</mapper>

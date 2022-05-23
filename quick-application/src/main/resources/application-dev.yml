@@ -1,0 +1,91 @@
+spring:
+  datasource: # 数据源
+    druid:
+      db-type: com.alibaba.druid.pool.DruidDataSource
+      url: jdbc:mysql://127.0.0.1:3306/quick-work?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+      driver-class-name: com.mysql.jdbc.Driver
+      username: root
+      password: 123456
+      initial-size: 5 # 初始化时建立物理连接数量
+      min-idle: 5 # 最小连接池数量
+      max-active: 20 # 最大连接池数量
+      max-wait: 60000 # 获取连接时最大等待时间 ms
+      time-between-eviction-runs-millis: 60000 # 多久检测一次需要关闭的空闲连接 ms
+      min-evictable-idle-time-millis: 300000 # 一个连接在池中最小生存的时间 ms
+      validation-query: SELECT 1 FROM DUAL # 用来检测连接是否有效的sql
+      test-while-idle: true # 申请连接时检测空闲时间
+      test-on-borrow: true # 申请连接时执行validationQuery
+      test-on-return: false # 归还连接时执行validationQuery
+      pool-prepared-statements: true # 是否开启PSCache
+      max-pool-prepared-statement-per-connection-size: 20 # 每个连接上PSCache的大小
+      use-global-data-source-stat: true
+      filters: stat,wall # 扩展插件
+      filter: # 监控慢SQL
+        stat:
+          log-slow-sql: true # 记录慢SQL日志
+          slow-sql-millis: 2000 # 执行耗时超过 2秒 认为是慢SQL
+  data:
+    redis:
+      repositories:
+        enabled: false # 禁用仓储
+
+  mail: # 邮件服务器
+    host: smtp.163.com
+    protocol: smtp
+    username: zbcbbs@163.com
+    password: MGSOLUKYLAIVDXCO
+    default-encoding: UTF-8
+    test-connection: false
+    user: 北辰 # 昵称
+  redis: # redis
+    host: 127.0.0.1
+    port: 6379
+#    password: 123456
+
+# 日志
+log:
+  file: logs/sys-quick-server
+  max-size: 30MB
+  level:
+    root: debug # 全局日志
+    service: debug # 业务日志
+    sql: debug # sql日志
+logging:
+  config: classpath:logback-spring.xml
+
+# IP 本地解析
+ip:
+  local-parsing: true
+
+# 上传存储路径
+file:
+  mac:
+    path: ~/file/
+    avatar: ~/avatar/
+  linux:
+    path: /home/quick/file/
+    avatar: /home/quick/avatar/
+  windows:
+    path: D:/quick/file/
+    avatar: D:/quick/avatar/
+  # 文件大小 /M
+  maxSize: 100
+  avatarMaxSize: 5
+  # 访问域名
+  domain: http://127.0.0.1:8090
+
+# swagger knife4j
+knife4j:
+  # 开启Swagger的Basic认证功能,默认是false
+  basic:
+    enable: true
+    # Basic认证用户名
+    username: test
+    # Basic认证密码
+    password: 123
+  # 开启生产环境屏蔽
+  production: false
+
+# 代码生成
+generator:
+  enabled: true

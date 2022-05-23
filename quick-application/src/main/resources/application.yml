@@ -1,0 +1,107 @@
+# 公用配置
+server:
+  port: 8090 # 端口
+
+# spring
+spring:
+  profiles:
+    active: dev # 多环境配置
+  mvc:
+    favicon:
+      enabled: false # 禁止显示默认的 favicon
+    servlet:
+      load-on-startup: 1 # 启动时自动加载
+  jackson: # jackson
+    time-zone: GMT+8
+  servlet:
+    multipart: # 上传
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+      file-size-threshold: 0
+  session:
+    store-type: none # 禁用 session
+  freemarker:
+    template-loader-path: classpath:/templates/
+    cache: false
+    charset: UTF-8
+    check-template-location: true
+    content-type: text/html
+    expose-request-attributes: false
+    expose-session-attributes: false
+    request-context-attribute: request
+    suffix: .ftl
+
+# mybatis
+mybatis:
+  configuration:
+    mapUnderscoreToCamelCase: true # 驼峰映射
+  mapper-locations: classpath*:/mybatis/mapper/* # xml扫描
+  type-aliases-package: com.dongzz.quick.**.domain # 实体别名(扩展支持通配符)
+# page helper plugin
+pagehelper:
+  helperDialect: mysql
+  params: count=countSql
+  reasonable: true
+  supportMethodsArguments: true
+
+# 登录
+login:
+  # 登录缓存
+  cache-enable: false
+  # 限制单用户登录
+  single-login: false
+  #  验证码
+  login-code:
+    #  验证码类型
+    code-type: arithmetic
+    #  验证码有效时间 / 分钟
+    expiration: 2
+    #  宽度
+    width: 111
+    #  高度
+    height: 36
+    # 内容长度
+    length: 2
+    # 字体名称，为空则使用默认字体
+    font-name:
+    # 字体大小
+    font-size: 25
+# jwt 令牌
+jwt:
+  header: Authorization # 请求头标记
+  token-start-with: Bearer # 令牌前缀
+  # 密钥 至少88位Base64对令牌进行编码
+  base64-secret: ZmQ0ZGI5NjQ0MDQwY2I4MjMxY2Y3ZmI3MjdhN2ZmMjNhODViOTg1ZGE0NTBjMGM4NDA5NzYxMjdjOWMwYWRmZTBlZjlhNGY3ZTg4Y2U3YTE1ODVkZDU5Y2Y3OGYwZWE1NzUzNWQ2YjFjZDc0NGMxZWU2MmQ3MjY1NzJmNTE0MzI=
+  online-key: online-token- # 在线用户
+  code-key: code-key- # 验证码
+  token-expire-time: 3600000 # 过期时间 毫秒 默认1小时
+  token-app-expire-time: 3600000 # 移动端 过期时间
+  detect: 600000 # 令牌续期检查时间范围 毫秒 默认10分钟
+  renew: 3600000 # 令牌续期范围 毫秒 默认1小时
+# 安全配置
+secure:
+  rsa-enable: false # 密码加密传输
+  private-key: MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAJtduuq/3+ZcNSZd2KJmTh99POqIzu3tueDfmKuwHq4+mC1DmAgCBquj4TvP2UB4rjgaHfblYUT7T69Jnm346lwn98U3oYRa2zqXZiiqA3FdrLGmcQvUkpo84naJczLDLQUJrdbhY3+ByX88KZmTg6TmO89VOCo7MYbbQP7NgTI1AgMBAAECgYBDF5XZO+SnaNg26j3b24wPAxkkOtIJYyhq2IPoWFTXcAZtPYxQoPdadZmVJ6ussLCjX3vjG6kGjfQaQRNecChb12oGpV7dN3F5xQ0KvWeysUepwj1olLFHrb5eO1R+P5CkE2sTJFmM0cxEUoZPmK0sVgHcShbrfUIDzWaCnVtZnQJBAOdynQduR29W22vgRdndrLK8pqZyvuZEbTGKolaJBf56KfhScO+rjqge6al1e9RfwvR/PLj43qHIWSlkfkob9PMCQQCr2Ptvn5cQ2eMYdzBSJ/4ZOketyQhRp5apJLitAYQxlz4ihjTAFDawNaHlI7zueAr7jKDUm8yyWqaTnnePLqY3AkEAv5cuDBerBKzG6I7347jQHAl0frbf9ifQqEEVz0KQdq7UDV7ZZF0Es4Ebdg7t2ckHznOBZbGGQjBiNpScwmZQJwJAQiLBsZXTx7JzScklGZk2m3LofyNtRi+fNf1h7YM14vf3+8V2q62b1njtk4gLgCNG5sSaaPiE8OceUJWeIcasRQJBAIMhvyaWI1tqSVY3jYQ7sU/B1F/VRnQzSu1/wZ/iO2YtnTgD8VSEbeJKhws3nJpew/UpOWpMLvc/UrcQjubd71Y=
+  ignoredUrls: # 白名单路径
+    - /sms/send/**
+    - /file/**
+
+# 异步线程池
+task:
+  pool:
+    core-pool-size: 5 # 核心线程数量 线程池初始化线程数量
+    keep-alive-seconds: 60 # 线程的空闲时间 超过核心线程数量之外的线程在空闲时间到达之后会被销毁
+    max-pool-size: 5 # 最大线程数量 缓冲队列满了后才申请超过该数量的线程
+    queue-capacity: 500 # 缓冲队列容量
+    thread-name-prefix: DailyAsync- # 线程池名称前缀 标记和定位任务所在的线程池
+
+# http client 客户端
+http:
+  client:
+    connect-timeout: 6000 # 创建连接的最长时间
+    connection-request-timeout: 500 # 连接池中获取到连接的最长时间
+    default-max-per-route: 20 # 并发数
+    max-total: 100 # 最大连接数
+    socket-timeout: 6000 # 数据传输的最长时间
+    stale-connection-check-enabled: true # 提交请求前测试连接是否可用

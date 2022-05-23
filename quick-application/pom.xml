@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>quick-work</artifactId>
+        <groupId>com.dongzz.boot.quick</groupId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>quick-application</artifactId>
+
+    <properties>
+        <!-- oshi监控需要固定jna版本，否则报错 -->
+        <jna.version>5.8.0</jna.version>
+    </properties>
+
+
+    <dependencies>
+
+        <!-- 公共模块 -->
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-common</artifactId>
+        </dependency>
+
+        <!-- 代码生成 -->
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-generator</artifactId>
+        </dependency>
+
+        <!-- 日志模块 -->
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-logging</artifactId>
+        </dependency>
+
+        <!-- 工具模块 -->
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-security</artifactId>
+        </dependency>
+
+        <!-- spring boot websocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- linux的管理 -->
+        <dependency>
+            <groupId>ch.ethz.ganymed</groupId>
+            <artifactId>ganymed-ssh2</artifactId>
+            <version>build210</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version>
+        </dependency>
+
+        <!-- 系统监控信息 -->
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>5.7.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- maven compile-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!-- spring boot maven plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <mainClass>com.dongzz.quick.RunQuickApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

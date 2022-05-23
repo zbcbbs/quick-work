@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.security.dao.SysUserMapper">
+
+    <!-- where 条件 -->
+    <sql id="where">
+        <where>
+            <if test="1==1">
+                and u.is_del = '0'
+            </if>
+            <if test="params.username != null and params.username != ''">
+                and u.username like concat('%', #{params.username}, '%')
+            </if>
+            <if test="params.status != null and params.status != ''">
+                and u.status = #{params.status}
+            </if>
+            <if test="params.startdate != null and params.startdate != ''">
+                and u.create_time &gt;= #{params.startdate}
+            </if>
+            <if test="params.enddate != null and params.enddate != ''">
+                and u.create_time &lt;= #{params.enddate}
+            </if>
+            <if test="params.deptId != null and params.deptId != ''">
+                and u.dept_id = #{params.deptId}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 新增用户，获取主键 -->
+    <insert id="insertOne" parameterType="SysUser">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into sys_user
+        (username,password,nickname,dept_id,head_img_url,phone,telephone,email,birthday,remark,sex,status,create_time,update_time,is_del)
+        values
+        (#{username},#{password},#{nickname},#{deptId},#{headImgUrl},#{phone},#{telephone},#{email},#{birthday},#{remark},#{sex},#{status},#{createTime},#{updateTime},#{isDel})
+    </insert>
+
+    <!-- 用户授角色 -->
+    <insert id="insertUserRoles">
+        insert into sys_user_role (user_id,role_id) values
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId},#{roleId})
+        </foreach>
+    </insert>
+
+    <!-- 删除用户角色 -->
+    <delete id="deleteUserRoles">
+		delete from sys_user_role where user_id = #{userId}
+	</delete>
+
+    <!-- 删除用户，逻辑删除 -->
+    <update id="deleteUser">
+		update sys_user set is_del = '1' where id = #{userId}
+	</update>
+
+    <!-- 修改用户状态 -->
+    <update id="updateUserStatus">
+		update sys_user set status = #{status} where id = #{id}
+	</update>
+
+    <!-- 根据用户名 查询 -->
+    <select id="selectUserByUsername" resultType="SysUser">
+		select * from sys_user where username = #{username}
+	</select>
+
+    <!-- 根据手机号 查询 -->
+    <select id="selectUserByUphone" resultType="SysUser">
+		select * from sys_user where phone = #{phone}
+	</select>
+
+    <!-- 根据邮箱 查询 -->
+    <select id="selectUserByUemail" resultType="SysUser">
+		select * from sys_user where email = #{email}
+	</select>
+
+    <!-- 条件查询 统计数量 -->
+    <select id="count" resultType="int">
+        select count(1) from sys_user u
+        inner join sys_dept d on u.dept_id = d.id
+        <include refid="where"/>
+    </select>
+
+    <!-- 条件查询 分页 -->
+    <select id="selectAllUsers" resultType="java.util.LinkedHashMap">
+        select u.*,d.`name` as deptName from sys_user u
+        inner join sys_dept d on u.dept_id = d.id
+        <include refid="where"/>
+        <if test="params.orderBy != null and params.orderBy != ''">
+            ${params.orderBy}
+        </if>
+        <if test="limit != null and limit != 0">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+</mapper>

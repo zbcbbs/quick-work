@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.security.dao.SysDeptMapper">
+
+    <!-- where -->
+    <sql id="where">
+        <where>
+            <if test="params.name != null and params.name != ''">
+                and `name` like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.pid != null and params.pid != ''">
+                and pid = #{params.pid}
+            </if>
+            <if test="params.enabled != null and params.enabled == 'true'">
+                and enabled = true
+            </if>
+            <if test="params.enabled != null and params.enabled == 'false'">
+                and enabled = false
+            </if>
+            <if test="params.startdate != null and params.startdate != ''">
+                and create_time &gt;= #{params.startdate}
+            </if>
+            <if test="params.enddate != null and params.enddate != ''">
+                and create_time &lt;= #{params.enddate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据部门名称查询 -->
+    <select id="selectDeptByDname" resultType="SysDept">
+		select * from sys_dept where `name` = #{deptName}
+	</select>
+
+    <!-- 根据PID查询 -->
+    <select id="selectByPid" resultType="SysDept">
+		select * from sys_dept where pid = #{pid}
+	</select>
+
+    <!-- 统计父节点下的子节点数 -->
+    <select id="countByPid" resultType="int">
+		select count(1) from sys_dept where pid = #{pid}
+	</select>
+
+    <!-- 修改指定节点的子节点数量 -->
+    <update id="updateSubCount">
+		update sys_dept set sub_count = #{subCount} where id = #{id}
+	</update>
+
+    <!-- 条件查询 统计数量 -->
+    <select id="count" resultType="int">
+        select count(1) from sys_dept
+        <include refid="where"/>
+    </select>
+
+    <!-- 条件查询 分页 -->
+    <select id="selectAllDepts" resultType="SysDept">
+        select * from sys_dept
+        <include refid="where"/>
+        <if test="params.orderBy != null and params.orderBy != ''">
+            ${params.orderBy}
+        </if>
+        <if test="limit != null and limit != 0">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+</mapper>

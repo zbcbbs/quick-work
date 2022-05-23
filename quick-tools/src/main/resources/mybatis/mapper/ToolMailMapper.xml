@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.tools.dao.ToolMailMapper">
+
+    <sql id="where">
+        <where>
+            <if test="params.subject != null and params.subject != ''">
+                and subject like concat('%', #{params.subject}, '%')
+            </if>
+            <if test="params.startdate != null and params.startdate != ''">
+                and create_time &gt;= #{params.startdate}
+            </if>
+            <if test="params.enddate != null and params.enddate != ''">
+                and create_time &lt;= #{params.enddate}
+            </if>
+            <if test="params.userId != null and params.userId != ''">
+                and user_id = #{params.userId}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 新增邮件发送记录 -->
+    <insert id="insertMailTo">
+		insert into tool_mail_to(mail_id,to_user,status) values(#{mailId},#{toUser},#{status})
+	</insert>
+
+    <insert id="insertMail" parameterType="ToolMail" useGeneratedKeys="true" keyProperty="id">
+		insert into tool_mail(user_id,subject,content,create_time,update_time) values(#{userId},#{subject},#{content},now(),now())
+	</insert>
+
+    <select id="count" resultType="int">
+        select count(1) from tool_mail
+        <include refid="where"/>
+    </select>
+
+    <!-- 分页条件查询 -->
+    <select id="selectAllMails" resultType="ToolMail">
+        select * from tool_mail
+        <include refid="where"/>
+        <if test="params.orderBy != null and params.orderBy != ''">
+            ${params.orderBy}
+        </if>
+        <if test="limit != null and limit != 0">
+            limit #{offset},#{limit}
+        </if>
+    </select>
+
+    <!-- 查询邮件发送详情 -->
+    <select id="selectMailDetailsTo" resultType="map">
+		select to_user toUser,status from tool_mail_to where mail_id = #{mailId}
+	</select>
+</mapper>

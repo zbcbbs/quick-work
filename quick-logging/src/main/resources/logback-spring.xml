@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration>
+
+    <!-- 全局属性 -->
+    <!-- 读取yml中配置的属性 -->
+    <springProperty name="logFile" source="log.file"/>
+    <springProperty name="rootLevel" source="log.level.root"/>
+    <springProperty name="serviceLevel" source="log.level.service"/>
+    <springProperty name="sqlLevel" source="log.level.sql"/>
+    <!-- 最大文件大小 -->
+    <springProperty name="maxFileSize" source="log.max-size"/>
+
+    <!-- 控制台 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d [%thread] %-5level %logger{50} -[%file:%line]- %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="SYS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logFile}.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level -[%file:%line]- %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logFile}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${maxFileSize}</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SYS_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logFile}.info.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level %logger{36} -[%file:%line]- %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logFile}.info.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${maxFileSize}</maxFileSize>
+        </rollingPolicy>
+        <!-- 输出 INFO 级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>info</level> <!-- 日志级别 -->
+            <onMatch>ACCEPT</onMatch> <!-- 匹配的日志 输出 -->
+            <onMismatch>DENY</onMismatch> <!-- 不匹配的日志 拒绝 -->
+        </filter>
+    </appender>
+
+    <appender name="SYS_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logFile}.error.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level %logger{36} -[%file:%line]- %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logFile}.error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${maxFileSize}</maxFileSize>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="SYS_SQL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logFile}.sql.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level %logger{36} -[%file:%line]- %msg%n
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logFile}.sql.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${maxFileSize}</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 业务日志记录器 -->
+
+    <!-- Sql日志记录器 -->
+    <!-- additivity：是否继承 root logger，是否在root的appender中输出 -->
+    <logger name="com.dongzz.quick" level="${sqlLevel}" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="SYS_SQL"/>
+    </logger>
+
+    <!-- 第三方框架日志输出 -->
+    <logger name="org.springframework" level="OFF"/>
+    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="DEBUG"/>
+    <logger name="org.mybatis" level="OFF"/>
+    <logger name="tk.mybatis" level="OFF"/>
+    <logger name="org.hibernate" level="OFF"/>
+    <logger name="org.quartz" level="OFF"/>
+    <logger name="org.apache" level="OFF"/>
+    <logger name="io.netty" level="OFF"/>
+    <logger name="io.jsonwebtoken" level="OFF"/>
+    <logger name="io.swagger" level="OFF"/>
+    <logger name="io.lettuce" level="OFF"/>
+    <logger name="springfox.bean" level="OFF"/>
+    <logger name="springfox.documentation" level="OFF"/>
+    <logger name="com.alibaba" level="OFF"/>
+    <logger name="reactor" level="OFF"/>
+
+    <!-- 全局日志记录器 -->
+    <root level="${rootLevel}">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="SYS"/>
+        <appender-ref ref="SYS_INFO"/>
+        <appender-ref ref="SYS_ERROR"/>
+    </root>
+
+</configuration>

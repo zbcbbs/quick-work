@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dongzz.quick.modules.quartz.dao.SysQuartzJobMapper">
+	
+	<sql id="where">
+		<where>
+			<if test="params.jobName != null and params.jobName != ''">
+				and job_name like concat('%', #{params.jobName}, '%')
+			</if>
+			<if test="params.startdate != null and params.startdate != ''">
+				and create_time &gt;= #{params.startdate}
+			</if>
+			<if test="params.enddate != null and params.enddate != ''">
+				and create_time &lt;= #{params.enddate}
+			</if>
+		</where>
+	</sql>
+
+	<!-- 新增定时任务，获取主键 -->
+	<insert id="insertQuartzJob" parameterType="SysQuartzJob">
+		<selectKey resultType="int" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into sys_quartz_job
+		(job_name,cron,spring_bean_name,method_name,params,is_sys_job,status,person_in_charge,pause_after_failure,email,sub_task,description,create_time,update_time)
+		values
+		(#{jobName},#{cron},#{springBeanName},#{methodName},#{params},#{isSysJob},#{status},#{personInCharge},#{pauseAfterFailure},#{email},#{subTask},#{description},#{createTime},#{updateTime})
+	</insert>
+	
+	<!-- 统计数量 -->
+	<select id="count" resultType="int">
+		select count(1) from sys_quartz_job
+		<include refid="where"/>
+	</select>
+	
+	<!-- 分页条件查询 -->
+	<select id="selectAllQuartzJobs" resultType="SysQuartzJob">
+		select * from sys_quartz_job
+		<include refid="where"/>
+		<if test="params.orderBy != null and params.orderBy != ''">
+			${params.orderBy}
+		</if>
+		limit #{offset},#{limit}
+	</select>
+</mapper>
