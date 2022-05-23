@@ -1,7 +1,7 @@
 # quick-work
 
 #### Description
-基于 spring boot 2.x，vue，element ui 的快速开发平台.
+基于Spring Boot 2.x 的快速开发平台.
 
 #### Software Architecture
 Software architecture description
