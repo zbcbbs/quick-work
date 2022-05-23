@@ -88,9 +88,9 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("快速开发平台接口文档")
                 .description("基于Spring Boot 2.x的快速开发平台")
-                .termsOfServiceUrl("http://quick.zcboys.com") // 项目地址
+                .termsOfServiceUrl("http://quick.zbcbbs.com") // 项目地址
                 .license("Apache License v2.0")
-                .contact(new Contact("北辰", "", "zbcbbs@163.com"))
+                .contact(new Contact("北辰", "http://zbcbbs.com", "zbcbbs@163.com"))
                 .version("1.0.1").build();
     }
 
@@ -101,9 +101,9 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("系统接口")
                 .description("系统相关的接口")
-                .termsOfServiceUrl("http://quick.zcboys.com")
+                .termsOfServiceUrl("http://quick.zbcbbs.com")
                 .license("Apache License v2.0")
-                .contact(new Contact("北辰", "", "zbcbbs@163.com"))
+                .contact(new Contact("北辰", "http://zbcbbs.com", "zbcbbs@163.com"))
                 .version("1.0.1").build();
     }
 
