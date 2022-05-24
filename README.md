@@ -11,9 +11,9 @@
 | Gitee  |          |        |
 | GitHub |          |        |
 
-开发文档：
+技术文档：
 
-
+地址：http://zbcbbs.gitee.io/quick-work-docs
 
 #### 主要功能
 
