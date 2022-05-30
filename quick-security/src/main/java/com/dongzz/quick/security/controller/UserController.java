@@ -3,11 +3,13 @@ package com.dongzz.quick.security.controller;
 import com.dongzz.quick.common.base.BaseController;
 import com.dongzz.quick.common.plugin.vuetables.VueTableRequest;
 import com.dongzz.quick.common.plugin.vuetables.VueTableResponse;
-import com.dongzz.quick.common.utils.SecurityUtil;
+import com.dongzz.quick.common.utils.*;
 import com.dongzz.quick.common.domain.ResponseVo;
 import com.dongzz.quick.security.domain.SysUser;
 import com.dongzz.quick.security.service.UserService;
+import com.dongzz.quick.security.service.dto.EmailDto;
 import com.dongzz.quick.security.service.dto.LoginUser;
+import com.dongzz.quick.security.service.dto.PassDto;
 import com.dongzz.quick.security.service.dto.UserDto;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +28,10 @@ import java.util.List;
 public class UserController extends BaseController {
 
     @Autowired
-    private UserService userService; // 用户接口
+    private UserService userService;
 
     /**
-     * 新增用户
+     * 新增
      */
     @PostMapping
     @ApiOperation(value = "新增用户", notes = "新增用户")
@@ -41,7 +43,7 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 删除用户，逻辑，支持批量
+     * 删除，逻辑，支持批量
      */
     @DeleteMapping("/{id}")
     @ApiOperation(value = "删除用户", notes = "删除用户，逻辑，支持批量")
@@ -54,7 +56,7 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 修改用户
+     * 修改
      */
     @PutMapping
     @ApiOperation(value = "修改用户", notes = "修改用户")
@@ -66,7 +68,7 @@ public class UserController extends BaseController {
     }
 
     /**
-     * 修改用户状态
+     * 修改指定用户状态
      */
     @PutMapping("/updateStatus")
     @ApiOperation(value = "修改用户状态", notes = "修改用户状态")
@@ -75,9 +77,31 @@ public class UserController extends BaseController {
             @ApiImplicitParam(name = "status", value = "用户状态 0,1,2", dataType = "string", paramType = "query", required = true)
     })
     public ResponseVo update(Integer id, String status) throws Exception {
-        userService.updateUser(id, status);
+        userService.updateStatus(id, status);
         return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
+
+    /**
+     * 修改个人邮箱
+     */
+    @PostMapping("/updateEmail")
+    @ApiOperation("修改邮箱")
+    public ResponseVo update(@RequestBody EmailDto emailDto) throws Exception {
+        userService.updateEmail(emailDto);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+    }
+
+
+    /**
+     * 修改个人密码
+     */
+    @PostMapping("/updatePass")
+    @ApiOperation("修改密码")
+    public ResponseVo update(@RequestBody PassDto passDto) throws Exception {
+        userService.updatePass(passDto);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+    }
+
 
     /**
      * 获取 用户列表

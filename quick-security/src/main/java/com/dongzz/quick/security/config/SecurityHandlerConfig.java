@@ -1,11 +1,11 @@
 package com.dongzz.quick.security.config;
 
-import cn.hutool.core.util.IdUtil;
 import com.dongzz.quick.common.utils.WebUtil;
 import com.dongzz.quick.common.domain.ResponseVo;
 import com.dongzz.quick.security.config.bean.JwtProperties;
 import com.dongzz.quick.security.config.bean.LoginProperties;
 import com.dongzz.quick.security.service.OnlineUserService;
+import com.dongzz.quick.security.service.SecurityService;
 import com.dongzz.quick.security.service.TokenService;
 import com.dongzz.quick.security.service.dto.LoginUser;
 import org.slf4j.Logger;
@@ -39,6 +39,8 @@ public class SecurityHandlerConfig {
     private TokenService tokenService;
     @Autowired
     private OnlineUserService onlineUserService;
+    @Autowired
+    private SecurityService securityService;
 
     /**
      * 登陆成功 处理器
@@ -46,28 +48,28 @@ public class SecurityHandlerConfig {
     @Bean
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return (request, response, authentication) -> {
-            // 获取认证信息
+            // 获取认证主体
             LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-
-            // 日志
             logger.debug("User login success: Username={}", loginUser.getUsername());
-
             // 登陆成功
-            loginUser.setUuid(IdUtil.randomUUID()); // 缓存标记
             String token = tokenService.createJWTToken(loginUser); // 令牌生成
             onlineUserService.save(loginUser, token, request); // 缓存
 
             // 响应
-            Map<String, Object> result = new HashMap<>();
-            result.put("token", jwtProperties.getTokenStartWith() + token);
-            result.put("user", loginUser);
+            Map<String, Object> data = new HashMap<>();
+            try {
+                data.put("token", jwtProperties.getTokenStartWith() + token);
+                data.put("user", securityService.getCurrentUser(loginUser));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             // 限制单用户登录 剔除已登录的用户
             if (loginProperties.isSingleLogin()) {
                 onlineUserService.checkLoginOnUser(loginUser.getUsername(), token);
             }
 
-            WebUtil.flushOutJson(response, HttpStatus.OK.value(), new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), result));
+            WebUtil.flushOutJson(response, HttpStatus.OK.value(), new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), data));
         };
     }
 

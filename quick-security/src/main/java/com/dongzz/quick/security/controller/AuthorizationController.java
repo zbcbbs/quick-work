@@ -2,17 +2,18 @@ package com.dongzz.quick.security.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.dongzz.quick.common.utils.RedisUtil;
-import com.dongzz.quick.common.utils.SecurityUtil;
 import com.dongzz.quick.common.domain.ResponseVo;
+import com.dongzz.quick.common.utils.SecurityUtil;
 import com.dongzz.quick.security.config.bean.JwtProperties;
 import com.dongzz.quick.security.config.bean.LoginCodeEnum;
 import com.dongzz.quick.security.config.bean.LoginProperties;
+import com.dongzz.quick.security.service.SecurityService;
+import com.dongzz.quick.security.service.dto.LoginUser;
 import com.wf.captcha.base.Captcha;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,6 +36,8 @@ public class AuthorizationController {
     private JwtProperties jwtProperties;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private SecurityService securityService;
 
     /**
      * 获取验证码
@@ -65,8 +68,9 @@ public class AuthorizationController {
     @GetMapping("/info")
     @ApiOperation("获取在线用户信息")
     public ResponseVo info() throws Exception {
-        UserDetails loginUser = SecurityUtil.getCurrentUser();
-        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), loginUser);
+        LoginUser loginUser = (LoginUser) SecurityUtil.getCurrentUser();
+        Map<String, Object> data = securityService.getCurrentUser(loginUser);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), data);
     }
 
 }

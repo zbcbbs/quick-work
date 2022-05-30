@@ -6,15 +6,15 @@ import com.dongzz.quick.common.exception.ServiceException;
 import com.dongzz.quick.common.plugin.vuetables.VueTableHandler;
 import com.dongzz.quick.common.plugin.vuetables.VueTableRequest;
 import com.dongzz.quick.common.plugin.vuetables.VueTableResponse;
-import com.dongzz.quick.common.utils.DateUtil;
-import com.dongzz.quick.common.utils.ExcelUtil;
-import com.dongzz.quick.common.utils.StringUtil;
-import com.dongzz.quick.common.utils.Util;
+import com.dongzz.quick.common.utils.*;
+import com.dongzz.quick.security.config.bean.SecurityProperties;
 import com.dongzz.quick.security.dao.SysRoleMapper;
 import com.dongzz.quick.security.dao.SysUserMapper;
 import com.dongzz.quick.security.domain.SysRole;
 import com.dongzz.quick.security.domain.SysUser;
 import com.dongzz.quick.security.service.UserService;
+import com.dongzz.quick.security.service.dto.EmailDto;
+import com.dongzz.quick.security.service.dto.PassDto;
 import com.dongzz.quick.security.service.dto.UserDto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,11 @@ public class UserServiceImpl extends BaseMybatisServiceImpl<SysUser> implements 
     @Autowired
     private SysRoleMapper roleMapper;
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder; // 加密器
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private SecurityProperties securityProperties;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public void addUser(SysUser user) throws Exception {
@@ -101,11 +105,6 @@ public class UserServiceImpl extends BaseMybatisServiceImpl<SysUser> implements 
     }
 
     @Override
-    public void updateUser(Integer id, String status) throws Exception {
-        userMapper.updateUserStatus(id, status);
-    }
-
-    @Override
     public void updateUser(UserDto userDto) throws Exception {
         SysUser user = userDto;
         // 校验用户
@@ -125,6 +124,40 @@ public class UserServiceImpl extends BaseMybatisServiceImpl<SysUser> implements 
             userMapper.deleteUserRoles(user.getId());
             userMapper.insertUserRoles(user.getId(), roleIds);
         }
+    }
+
+    @Override
+    public void updateStatus(Integer id, String status) throws Exception {
+        userMapper.updateUserStatus(id, status);
+    }
+
+    @Override
+    public void updateEmail(EmailDto emailDto) throws Exception {
+        String cacheCode = (String) redisUtil.get(CacheKey.CODE_EMAIL + emailDto.getEmail());
+        if (!StringUtils.equals(emailDto.getCode(), cacheCode)) {
+            throw new ServiceException("验证码不正确");
+        }
+        String password = RsaUtil.decryptByPrivateKey(securityProperties.getPrivateKey(), emailDto.getPassword());
+        if (!passwordEncoder.matches(password, SecurityUtil.getCurrentUser().getPassword())) {
+            throw new ServiceException("密码不正确");
+        }
+        SysUser user = new SysUser();
+        user.setId(SecurityUtil.getCurrentUserId());
+        user.setEmail(emailDto.getEmail());
+        userMapper.updateByPrimaryKeySelective(user);
+    }
+
+    @Override
+    public void updatePass(PassDto passDto) throws Exception {
+        String oldPass = RsaUtil.decryptByPrivateKey(securityProperties.getPrivateKey(), passDto.getOldPass());
+        String newPass = RsaUtil.decryptByPrivateKey(securityProperties.getPrivateKey(), passDto.getNewPass());
+        if (!passwordEncoder.matches(oldPass, SecurityUtil.getCurrentUser().getPassword())) {
+            throw new ServiceException("旧密码不正确");
+        }
+        SysUser user = new SysUser();
+        user.setId(SecurityUtil.getCurrentUserId());
+        user.setPassword(passwordEncoder.encode(newPass));
+        userMapper.updateByPrimaryKeySelective(user);
     }
 
     @Override

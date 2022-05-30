@@ -38,7 +38,7 @@ public class SwaggerAdditionalConfig implements ApiListingScannerPlugin {
                 .uniqueId(IdUtil.simpleUUID())
                 .consumes(Sets.newHashSet(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) // 请求格式
                 .produces(Sets.newHashSet(MediaType.APPLICATION_JSON_VALUE)) // 响应格式
-                .tags(Sets.newHashSet("系统：登陆管理"))
+                .tags(Sets.newHashSet("系统：鉴权认证"))
                 .parameters(Arrays.asList(
                         new ParameterBuilder()
                                 .description("用户名")
@@ -92,7 +92,7 @@ public class SwaggerAdditionalConfig implements ApiListingScannerPlugin {
                 .uniqueId(IdUtil.simpleUUID())
                 .consumes(Sets.newHashSet(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) // 请求格式
                 .produces(Sets.newHashSet(MediaType.APPLICATION_JSON_VALUE)) // 响应格式
-                .tags(Sets.newHashSet("系统：登陆管理"))
+                .tags(Sets.newHashSet("系统：鉴权认证"))
                 .parameters(Arrays.asList(
                         new ParameterBuilder()
                                 .description("用户名")
@@ -147,7 +147,7 @@ public class SwaggerAdditionalConfig implements ApiListingScannerPlugin {
                 .uniqueId(IdUtil.simpleUUID())
                 .consumes(Sets.newHashSet(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .produces(Sets.newHashSet(MediaType.APPLICATION_JSON_VALUE))
-                .tags(Sets.newHashSet("系统：登陆管理"))
+                .tags(Sets.newHashSet("系统：鉴权认证"))
                 .parameters(null)
                 .responseMessages(Collections.singleton(
                         new ResponseMessageBuilder().code(200).message("OK")

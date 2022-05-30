@@ -58,7 +58,7 @@
 
     <!-- 查询 会员 持有的角色 -->
     <select id="selectRolesByMemberId" resultType="SysRole">
-		select r.* from dz_member_role mr
+		select r.* from sys_member_role mr
 		inner join sys_role r on mr.role_id = r.id
 		where mr.member_id = #{id}
 	</select>

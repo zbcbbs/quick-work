@@ -53,8 +53,8 @@
 
     <!-- 根据会员ID 查询菜单 -->
     <select id="selectMenusByMemberId" resultType="SysPermission">
-        select distinct p.* from dz_member m
-        inner join dz_member_role mr on m.id = mr.member_id
+        select distinct p.* from sys_member m
+        inner join sys_member_role mr on m.id = mr.member_id
         inner join sys_role r on mr.role_id = r.id
         inner join sys_role_permission rp on r.id = rp.role_id
         inner join sys_permission p on rp.permission_id = p.id
@@ -80,8 +80,8 @@
 
     <!-- 根据会员ID 查询按钮权限 -->
     <select id="selectPermissionsByMemberId" resultType="SysPermission">
-		SELECT DISTINCT p.* FROM dz_member m
-		INNER JOIN dz_member_role mr ON m.id=mr.member_id
+		SELECT DISTINCT p.* FROM sys_member m
+		INNER JOIN sys_member_role mr ON m.id=mr.member_id
 		INNER JOIN sys_role r ON mr.role_id=r.id
 		INNER JOIN sys_role_permission rp ON r.id=rp.role_id
 		INNER JOIN sys_permission p ON rp.permission_id=p.id

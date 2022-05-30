@@ -1,6 +1,7 @@
 package com.dongzz.quick.security.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.IdUtil;
 import com.dongzz.quick.common.utils.RegexUtil;
 import com.dongzz.quick.security.config.bean.LoginProperties;
 import com.dongzz.quick.security.domain.SysMember;
@@ -35,7 +36,7 @@ public class MemberDetailsServiceImpl implements UserDetailsService {
     private LoginProperties loginProperties;
 
     // 用户信息缓存
-    public static Map<String, LoginUser> userCache = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, LoginUser> userCache = new ConcurrentHashMap<>();
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -50,42 +51,41 @@ public class MemberDetailsServiceImpl implements UserDetailsService {
         }
 
         if (searchDb) {
-            SysMember dzMember = null;
+            SysMember sysMember = null;
             String error = "账号不存在";
             try {
                 // 正则验证 验证前台提交的账号格式
                 if (RegexUtil.checkMobile(username)) { // 手机号
-                    dzMember = memberService.findMemberByUphone(username);
+                    sysMember = memberService.findMemberByUphone(username);
                     error = "手机号尚未注册";
                 } else if (RegexUtil.checkEmail(username)) { // 邮箱
-                    dzMember = memberService.findMemberByUemail(username);
+                    sysMember = memberService.findMemberByUemail(username);
                     error = "邮箱尚未注册";
                 } else { // 用户名
-                    dzMember = memberService.findMemberByUname(username);
+                    sysMember = memberService.findMemberByUname(username);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            if (null == dzMember) {
+            if (null == sysMember) {
                 throw new UsernameNotFoundException(error);
             }
 
-            // 构建 在线用户
+            // 构造认证主体
             loginUser = new LoginUser();
-            loginUser.setId(dzMember.getId()); // 账号ID
-            loginUser.setUsername(dzMember.getUsername()); // 账号
-            loginUser.setPassword(dzMember.getPassword()); // 密码
+            loginUser.setId(sysMember.getId());
+            loginUser.setUsername(sysMember.getUsername());
+            loginUser.setPassword(sysMember.getPassword());
             loginUser.setAdmin(false); // 会员
-            loginUser.setStatus(dzMember.getStatus()); // 账号状态
-            loginUser.setNickName(dzMember.getNickname());
-            loginUser.setDept("部门");
+            loginUser.setStatus(sysMember.getStatus());
+            loginUser.setUuid(IdUtil.simpleUUID()); // 缓存标记
 
             // 获取权限码
             Set<String> allPermissions = null;
             Set<String> allRoles = null;
             try {
-                Map<String, Set<String>> map = permissionService.findAllPermissionsByMemberId(dzMember.getId());
+                Map<String, Set<String>> map = permissionService.findAllPermissionsByMemberId(sysMember.getId());
                 allPermissions = map.get("allPermissions");
                 allRoles = map.get("allRoles");
             } catch (Exception e) {

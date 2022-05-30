@@ -9,6 +9,9 @@
             <if test="1==1">
                 and is_del = '0'
             </if>
+            <if test="params.user != null and params.user != ''">
+                and `user` = #{params.user}
+            </if>
             <if test="params.content != null and params.content != ''">
                 and content like concat('%', #{params.content}, '%')
             </if>

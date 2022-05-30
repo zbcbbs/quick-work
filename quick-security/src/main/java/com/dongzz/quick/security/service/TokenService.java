@@ -1,7 +1,6 @@
 package com.dongzz.quick.security.service;
 
 import com.dongzz.quick.security.service.dto.LoginUser;
-import com.dongzz.quick.security.service.dto.OnlineUser;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;
 
@@ -61,10 +60,10 @@ public interface TokenService {
 
 
     /**
-     * 根据在线用户 构建认证信息
+     * 根据认证主体 构建认证信息
      *
-     * @param onlineUser 在线用户
+     * @param loginUser 认证主体
      * @return
      */
-    Authentication getAuthentication(OnlineUser onlineUser);
+    Authentication getAuthentication(LoginUser loginUser);
 }

@@ -2,6 +2,7 @@ package com.dongzz.quick.tools.service.impl;
 
 import cn.hutool.extra.mail.Mail;
 import cn.hutool.extra.mail.MailAccount;
+import cn.hutool.extra.mail.MailUtil;
 import com.dongzz.quick.common.base.BaseMybatisServiceImpl;
 import com.dongzz.quick.common.exception.ServiceException;
 import com.dongzz.quick.common.plugin.vuetables.VueTableHandler;
@@ -29,12 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 @Service
-@Transactional
 @CacheConfig(cacheNames = "mail")
 public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements MailService {
 
@@ -45,7 +44,7 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
     @Autowired
     private ToolMailConfigMapper mailConfigMapper;
 
-    // 邮件服务配置
+    // 邮箱配置
     @Autowired
     private JavaMailSender javaMailSender;
     @Value("${spring.mail.username}")
@@ -55,6 +54,7 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
 
     @Override
     @CachePut(key = "'config'")
+    @Transactional
     public ToolMailConfig config(ToolMailConfig config) throws Exception {
         Integer id = config.getId();
         if (null != id) {
@@ -93,7 +93,7 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
                 helper.setFrom(user + "<" + mailServer + ">");
                 helper.setTo(to);
                 helper.setSubject(mailDto.getSubject());
-                helper.setText(mailDto.getContent());
+                helper.setText(mailDto.getContent(), true);
                 javaMailSender.send(message);
             } catch (Exception e) {
                 status = 0;
@@ -145,22 +145,42 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
     }
 
     @Override
-    public void addMail(MailDto mailDto) throws Exception {
-        ToolMail mail = mailDto;
-        mail.setUserId(SecurityUtil.getCurrentUserId());
-        mail.setCreateTime(new Date());
-        mail.setUpdateTime(new Date());
-        mailMapper.insertSelective(mail);
+    public void sendSimple(MailDto mailDto, ToolMailConfig config) throws Exception {
+        String toUsers = mailDto.getToUsers();
+        if (StringUtils.isBlank(toUsers)) {
+            throw new ServiceException("收件人不能为空");
+        }
+        toUsers = toUsers.replace(" ", "").replace("；", ";");
+        String[] tos = toUsers.split(";");
+
+        MailAccount account = new MailAccount();
+        String user = config.getFromUser().split("@")[0];
+        account.setUser(user);
+        account.setHost(config.getHost());
+        account.setPort(Integer.parseInt(config.getPort()));
+        account.setAuth(true);
+        account.setPass(config.getPass());
+        account.setFrom(config.getUser() + "<" + config.getFromUser() + ">");
+        account.setSslEnable(true); // SSL方式发送
+        account.setStarttlsEnable(true); // STARTTLS安全连接
+
+        Mail.create(account)
+                .setTos(tos)
+                .setTitle(mailDto.getSubject())
+                .setContent(mailDto.getContent())
+                .setHtml(true)
+                .setUseGlobalSession(false)
+                .send();
     }
 
     @Override
-    public void addMail(MailDto mailDto, ToolMailConfig config) throws Exception {
+    @Transactional
+    public MailDto addMail(MailDto mailDto) throws Exception {
         ToolMail mail = mailDto;
         mail.setUserId(SecurityUtil.getCurrentUserId());
         mailMapper.insertMail(mail);
-        mailDto.setId(mail.getId());
-        send(mailDto, config); // 邮件发送
-
+        mailDto.setId(mail.getId()); // 记录主键
+        return mailDto;
     }
 
     @Override

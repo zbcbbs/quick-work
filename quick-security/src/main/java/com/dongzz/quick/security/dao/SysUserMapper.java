@@ -84,6 +84,17 @@ public interface SysUserMapper extends BaseMybatisMapper<SysUser> {
      */
     SysUser selectUserByUemail(String email) throws Exception;
 
+
+    /**
+     * 根据ID 查询用户信息
+     *
+     * @param id ID
+     * @return
+     * @throws Exception
+     */
+    Map<String, Object> selectUserByUserid(Integer id) throws Exception;
+
+
     /**
      * 条件查询 统计数量
      *

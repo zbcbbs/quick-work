@@ -8,7 +8,6 @@ import com.dongzz.quick.security.authentication.UserAuthenticationToken;
 import com.dongzz.quick.security.config.bean.JwtProperties;
 import com.dongzz.quick.security.service.TokenService;
 import com.dongzz.quick.security.service.dto.LoginUser;
-import com.dongzz.quick.security.service.dto.OnlineUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -108,7 +107,7 @@ public class TokenServiceJWTImpl implements TokenService {
         } catch (ExpiredJwtException e) {
             logger.error("{}已过期", token);
         } catch (Exception e) {
-            logger.error("{}", e);
+            logger.error("获取uuid异常", e);
         }
         return null;
     }
@@ -126,10 +125,9 @@ public class TokenServiceJWTImpl implements TokenService {
     }
 
     @Override
-    public Authentication getAuthentication(OnlineUser onlineUser) {
-        // 在线认证信息
-        LoginUser loginUser = onlineUser.getLoginUser();
-        boolean isAdmin = loginUser.isAdmin(); // 管理员
+    public Authentication getAuthentication(LoginUser loginUser) {
+        // 判断是否管理员
+        boolean isAdmin = loginUser.isAdmin();
         if (!isAdmin) {
             return new MemberAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         }

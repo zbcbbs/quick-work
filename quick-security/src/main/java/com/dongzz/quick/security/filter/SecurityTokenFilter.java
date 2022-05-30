@@ -6,9 +6,9 @@ import com.dongzz.quick.security.config.bean.SecurityProperties;
 import com.dongzz.quick.security.service.OnlineUserService;
 import com.dongzz.quick.security.service.TokenService;
 import com.dongzz.quick.security.service.UserCacheClean;
+import com.dongzz.quick.security.service.dto.LoginUser;
 import com.dongzz.quick.security.service.dto.OnlineUser;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class SecurityTokenFilter extends GenericFilterBean {
                 boolean cleanCache = false; // 清理缓存
                 try {
                     onlineUser = onlineUserService.getOne(jwtProperties.getOnlineKey() + token);
-                } catch (ExpiredJwtException e) {
+                } catch (Exception e) {
                     logger.error(e.getMessage());
                     cleanCache = true;
                 } finally {
@@ -101,8 +101,8 @@ public class SecurityTokenFilter extends GenericFilterBean {
                 }
                 if (onlineUser != null && org.springframework.util.StringUtils.hasText(token)) {
                     // 刷新上下文中的认证信息
-                    // 若令牌过期失效，则根据令牌无法找到缓存的用户信息 此处不会执行，导致身份信息在上下文中丢失，响应 401 未登陆
-                    Authentication authentication = tokenService.getAuthentication(onlineUser);
+                    LoginUser loginUser = onlineUser.getLoginUser();
+                    Authentication authentication = tokenService.getAuthentication(loginUser);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     tokenService.refresh(token); // 令牌续期
                 }

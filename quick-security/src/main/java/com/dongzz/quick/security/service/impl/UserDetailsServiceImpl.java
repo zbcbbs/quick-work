@@ -1,6 +1,7 @@
 package com.dongzz.quick.security.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.IdUtil;
 import com.dongzz.quick.common.utils.RegexUtil;
 import com.dongzz.quick.security.config.bean.LoginProperties;
 import com.dongzz.quick.security.domain.SysUser;
@@ -35,7 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private LoginProperties loginProperties;
 
     // 用户信息缓存
-    public static Map<String, LoginUser> userCache = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, LoginUser> userCache = new ConcurrentHashMap<>();
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -73,15 +74,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 throw new UsernameNotFoundException(error);
             }
 
-            // 构建 在线用户
+            // 构造认证主体
             loginUser = new LoginUser();
-            loginUser.setId(sysUser.getId()); // ID
-            loginUser.setUsername(sysUser.getUsername()); // 账号
-            loginUser.setPassword(sysUser.getPassword()); // 密码
+            loginUser.setId(sysUser.getId());
+            loginUser.setUsername(sysUser.getUsername());
+            loginUser.setPassword(sysUser.getPassword());
             loginUser.setAdmin(true); // 管理员
-            loginUser.setStatus(sysUser.getStatus()); // 账号状态
-            loginUser.setNickName(sysUser.getNickname());
-            loginUser.setDept("部门");
+            loginUser.setStatus(sysUser.getStatus());
+            loginUser.setUuid(IdUtil.simpleUUID()); // 缓存标记
 
             // 获取权限码
             Set<String> allPermissions = null;

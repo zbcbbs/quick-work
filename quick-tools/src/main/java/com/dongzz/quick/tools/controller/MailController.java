@@ -50,13 +50,14 @@ public class MailController extends BaseController {
     }
 
     /**
-     * 新增并发送邮件
+     * 新增并发送
      */
     @PostMapping("/send")
     @ApiOperation(value = "新增并发送邮件", notes = "新增并发送邮件")
     public ResponseVo send(@ApiParam(name = "邮件实体", value = "参数体", required = true) @RequestBody MailDto mailDto) throws Exception {
         ToolMailConfig config = mailService.find(); // 读取配置
-        mailService.addMail(mailDto, config);
+        MailDto mail = mailService.addMail(mailDto);
+        mailService.send(mail, config);
         return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
 

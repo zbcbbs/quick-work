@@ -6,7 +6,6 @@ import com.dongzz.quick.common.plugin.vuetables.VueTableResponse;
 import com.dongzz.quick.common.utils.*;
 import com.dongzz.quick.security.config.bean.JwtProperties;
 import com.dongzz.quick.security.service.dto.LoginUser;
-import com.dongzz.quick.security.service.dto.OnlineDto;
 import com.dongzz.quick.security.service.dto.OnlineUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +42,10 @@ public class OnlineUserService {
         String ip = StringUtil.getIp(request);
         String browser = StringUtil.getBrowser(request);
         String address = StringUtil.getCityInfo(ip);
+
         OnlineUser onlineUser = null;
         try {
-            onlineUser = new OnlineUser(loginUser, browser, ip, address, EncryptUtil.desEncrypt(token), new Date());
+            onlineUser = new OnlineUser(loginUser, loginUser.getUsername(), browser, ip, address, EncryptUtil.desEncrypt(token), new Date());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -61,12 +61,12 @@ public class OnlineUserService {
      */
     public VueTableResponse getAll(VueTableRequest request) {
         String filter = ObjectUtil.isNotNull(request.getParams().get("filter")) ? request.getParams().get("filter").toString() : "";
-        List<OnlineDto> onlineUserDtos = getAll(filter);
+        List<OnlineUser> onlineUsers = getAll(filter);
         Map<String, Object> page = PageUtil.toPage(
-                PageUtil.toPage(request.getOffset(), request.getLimit(), onlineUserDtos),
-                onlineUserDtos.size()
+                PageUtil.toPage(request.getOffset(), request.getLimit(), onlineUsers),
+                onlineUsers.size()
         );
-        List<OnlineDto> data = (List<OnlineDto>) page.get("content"); // 当前页记录
+        List<OnlineUser> data = (List<OnlineUser>) page.get("content"); // 当前页记录
         Integer total = (Integer) page.get("totalElements"); // 数量
         return new VueTableResponse(total, total, data);
 
@@ -78,25 +78,22 @@ public class OnlineUserService {
      * @param filter /
      * @return /
      */
-    public List<OnlineDto> getAll(String filter) {
+    public List<OnlineUser> getAll(String filter) {
         List<String> keys = redisUtil.scan(jwtProperties.getOnlineKey() + "*");
         Collections.reverse(keys);
-        List<OnlineDto> onlineUserDtos = new ArrayList<>();
+        List<OnlineUser> onlineUsers = new ArrayList<>();
         for (String key : keys) {
             OnlineUser onlineUser = (OnlineUser) redisUtil.get(key); // 在线用户
-            LoginUser lu = onlineUser.getLoginUser(); // 认证信息
-            // 重构
-            OnlineDto onlineDTO = new OnlineDto(lu.getUsername(), lu.getNickName(), lu.getDept(), onlineUser.getBrowser(), onlineUser.getIp(), onlineUser.getAddress(), onlineUser.getToken(), onlineUser.getLoginTime());
             if (StringUtil.isNotBlank(filter)) {
                 if (onlineUser.toString().contains(filter)) {
-                    onlineUserDtos.add(onlineDTO);
+                    onlineUsers.add(onlineUser);
                 }
             } else {
-                onlineUserDtos.add(onlineDTO);
+                onlineUsers.add(onlineUser);
             }
         }
-        onlineUserDtos.sort((o1, o2) -> o2.getLoginTime().compareTo(o1.getLoginTime()));
-        return onlineUserDtos;
+        onlineUsers.sort((o1, o2) -> o2.getLoginTime().compareTo(o1.getLoginTime()));
+        return onlineUsers;
     }
 
     /**
@@ -126,13 +123,12 @@ public class OnlineUserService {
      * @param response /
      * @throws IOException /
      */
-    public void download(List<OnlineDto> all, HttpServletResponse response) throws IOException {
+    public void download(List<OnlineUser> all, HttpServletResponse response) throws IOException {
         List<Map<String, Object>> list = new ArrayList<>();
-        for (OnlineDto user : all) {
+        for (OnlineUser user : all) {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("用户名", user.getUserName());
-            map.put("部门", user.getDept());
-            map.put("登录IP", user.getIp());
+            map.put("账号", user.getUserName());
+            map.put("IP", user.getIp());
             map.put("登录地点", user.getAddress());
             map.put("浏览器", user.getBrowser());
             map.put("登录日期", DateUtil.format(user.getLoginTime(), "yyyy-MM-dd HH:mm:ss"));
@@ -157,15 +153,15 @@ public class OnlineUserService {
      * @param userName 用户名
      */
     public void checkLoginOnUser(String userName, String igoreToken) {
-        List<OnlineDto> onlineUserDtos = getAll(userName);
-        if (onlineUserDtos == null || onlineUserDtos.isEmpty()) {
+        List<OnlineUser> onlineUsers = getAll(userName);
+        if (onlineUsers == null || onlineUsers.isEmpty()) {
             return;
         }
-        for (OnlineDto onlineUserDto : onlineUserDtos) {
-            if (onlineUserDto.getUserName().equals(userName)) {
+        for (OnlineUser onlineUser : onlineUsers) {
+            if (onlineUser.getUserName().equals(userName)) {
                 try {
                     // 获取令牌 进行解密
-                    String token = EncryptUtil.desDecrypt(onlineUserDto.getToken());
+                    String token = EncryptUtil.desDecrypt(onlineUser.getToken());
                     if (StringUtil.isNotBlank(igoreToken) && !igoreToken.equals(token)) {
                         this.kickOut(token);
                     } else if (StringUtil.isBlank(igoreToken)) {
@@ -185,8 +181,8 @@ public class OnlineUserService {
      */
     @Async
     public void kickOutForUsername(String username) throws Exception {
-        List<OnlineDto> onlineUsers = getAll(username);
-        for (OnlineDto onlineUser : onlineUsers) {
+        List<OnlineUser> onlineUsers = getAll(username);
+        for (OnlineUser onlineUser : onlineUsers) {
             if (onlineUser.getUserName().equals(username)) {
                 String token = EncryptUtil.desDecrypt(onlineUser.getToken());
                 kickOut(token);

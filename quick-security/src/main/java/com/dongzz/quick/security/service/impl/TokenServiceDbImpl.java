@@ -2,7 +2,6 @@ package com.dongzz.quick.security.service.impl;
 
 import com.dongzz.quick.security.service.TokenService;
 import com.dongzz.quick.security.service.dto.LoginUser;
-import com.dongzz.quick.security.service.dto.OnlineUser;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ public class TokenServiceDbImpl implements TokenService {
     }
 
     @Override
-    public Authentication getAuthentication(OnlineUser onlineUser) {
+    public Authentication getAuthentication(LoginUser loginUser) {
         return null;
     }
 }
