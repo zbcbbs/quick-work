@@ -1,5 +1,6 @@
 package com.dongzz.quick.security.service.impl;
 
+import cn.hutool.core.map.MapUtil;
 import com.dongzz.quick.security.dao.SysMemberMapper;
 import com.dongzz.quick.security.dao.SysUserMapper;
 import com.dongzz.quick.security.domain.SysMember;
@@ -31,7 +32,8 @@ public class SecurityServiceImpl implements SecurityService {
         // 详细信息
         if (loginUser.isAdmin()) {
             Map<String, Object> user = userMapper.selectUserByUserid(loginUser.getId());
-            data.put("detail", user);
+            Map<String, Object> detail = MapUtil.toCamelCaseMap(user); // 原始字段转化为驼峰命名
+            data.put("detail", detail);
         } else {
             SysMember member = memberMapper.selectByPrimaryKey(loginUser.getId());
             data.put("detail", member);
@@ -39,4 +41,5 @@ public class SecurityServiceImpl implements SecurityService {
 
         return data;
     }
+
 }
