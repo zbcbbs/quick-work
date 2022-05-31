@@ -20,6 +20,10 @@
             <groupId>com.dongzz.boot.quick</groupId>
             <artifactId>quick-logging</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.dongzz.boot.quick</groupId>
+            <artifactId>quick-tools</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

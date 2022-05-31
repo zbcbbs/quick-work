@@ -14,24 +14,19 @@ import com.dongzz.quick.common.utils.FileUtil;
 import com.dongzz.quick.common.utils.StringUtil;
 import com.dongzz.quick.tools.dao.ToolLocalFileMapper;
 import com.dongzz.quick.tools.domain.ToolLocalFile;
-import com.dongzz.quick.tools.service.LocalFileService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.dongzz.quick.tools.service.FileLocalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
-public class LocalFileServiceImpl extends BaseMybatisServiceImpl<ToolLocalFile> implements LocalFileService {
-
-    private static final Logger logger = LoggerFactory.getLogger(LocalFileServiceImpl.class);
+public class FileLocalServiceImpl extends BaseMybatisServiceImpl<ToolLocalFile> implements FileLocalService {
 
     @Autowired
     private ToolLocalFileMapper fileMapper;
@@ -42,27 +37,22 @@ public class LocalFileServiceImpl extends BaseMybatisServiceImpl<ToolLocalFile> 
     @Transactional
     public ToolLocalFile addFile(MultipartFile file, String name) throws Exception {
         FileUtil.checkSize(fileProperties.getMaxSize(), file.getSize()); // 检查大小限制
-        String suffix = FileUtil.getExtensionName(file.getOriginalFilename()); // 扩展名
-        String type = FileUtil.getFileType(suffix); // 类型
-        String filePath = fileProperties.getPath().getPath() + type + File.separator;
-        filePath = filePath.replace("\\", "/");
+        String filePath = fileProperties.getPath().getPath();
         UploadVo vo = FileUtil.upload(file, filePath);
         if (ObjectUtil.isNull(vo)) {
             throw new ServiceException("上传文件失败！");
         }
         try {
-            String path = File.separator + vo.getFileType() + File.separator + vo.getCacheName(); // 相对路径
-            path = path.replace("\\", "/");
             ToolLocalFile tlf = new ToolLocalFile();
             tlf.setId(vo.getFileMd5());
-            name = StringUtil.isNotBlank(name) ? name : vo.getFileName(); // 源名称
-            tlf.setName(name);
+            tlf.setName(StringUtil.isNotBlank(name) ? name : vo.getFileName());
             tlf.setCacheName(vo.getCacheName());
             tlf.setContentType(vo.getContentType());
             tlf.setType(vo.getFileType());
             tlf.setSize(vo.getFileSize());
-            tlf.setUrl(fileProperties.getDomain() + "/file" + path);
-            tlf.setPath(path);
+            String url = fileProperties.getDomain() + fileProperties.getMapping().getPath() + vo.getFilePath().replace("\\", "/");
+            tlf.setUrl(url);
+            tlf.setPath(vo.getFilePath());
             tlf.setCachePath(vo.getCachePath());
             tlf.setCreateTime(new Date());
             tlf.setUpdateTime(new Date());

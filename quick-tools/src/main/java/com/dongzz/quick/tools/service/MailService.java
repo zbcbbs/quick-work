@@ -35,29 +35,28 @@ public interface MailService extends BaseMybatisService<ToolMail> {
     /**
      * 邮件发送，记录日志
      *
-     * @param mailDto 已创建的
+     * @param mail 已创建的
      * @throws Exception
      */
-    void send(MailDto mailDto) throws Exception;
+    void send(MailDto mail) throws Exception;
 
     /**
      * 邮件发送，记录日志
      *
-     * @param mailDto 已创建的
-     * @param config  邮箱配置
+     * @param mail   已创建的
+     * @param config 邮箱配置
      * @throws Exception
      */
-    void send(MailDto mailDto, ToolMailConfig config) throws Exception;
+    void send(MailDto mail, ToolMailConfig config) throws Exception;
 
     /**
      * 邮件发送，不记录日志
      *
-     * @param mailDto 邮件
-     * @param config  邮箱配置
+     * @param mail   邮件
+     * @param config 邮箱配置
      * @throws Exception
      */
-    void sendSimple(MailDto mailDto, ToolMailConfig config) throws Exception;
-
+    void sendSimple(MailDto mail, ToolMailConfig config) throws Exception;
 
     /**
      * 添加邮件

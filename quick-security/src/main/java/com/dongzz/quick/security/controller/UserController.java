@@ -11,10 +11,14 @@ import com.dongzz.quick.security.service.dto.EmailDto;
 import com.dongzz.quick.security.service.dto.LoginUser;
 import com.dongzz.quick.security.service.dto.PassDto;
 import com.dongzz.quick.security.service.dto.UserDto;
+import com.dongzz.quick.tools.domain.ToolCosConfig;
+import com.dongzz.quick.tools.domain.ToolCosFile;
+import com.dongzz.quick.tools.service.FileCosService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
@@ -29,6 +33,8 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private FileCosService fileService;
 
     /**
      * 新增
@@ -99,6 +105,21 @@ public class UserController extends BaseController {
     @ApiOperation("修改密码")
     public ResponseVo update(@RequestBody PassDto passDto) throws Exception {
         userService.updatePass(passDto);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+    }
+
+    /**
+     * 修改上传头像
+     */
+    @PostMapping("/updateAvatar")
+    @ApiOperation("修改上传头像")
+    public ResponseVo update(@RequestParam("avatar") MultipartFile file) throws Exception {
+        ToolCosConfig config = fileService.find();
+        ToolCosFile tcf = fileService.addFile(file, config);
+        SysUser user = new SysUser();
+        user.setId(SecurityUtil.getCurrentUserId());
+        user.setHeadImgUrl(tcf.getUrl());
+        userService.updateSelective(user);
         return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
 

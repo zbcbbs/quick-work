@@ -1,12 +1,13 @@
 package com.dongzz.quick.tools.controller;
 
 import com.dongzz.quick.common.base.BaseController;
+import com.dongzz.quick.common.domain.ResponseVo;
 import com.dongzz.quick.common.plugin.vuetables.VueTableRequest;
 import com.dongzz.quick.common.plugin.vuetables.VueTableResponse;
-import com.dongzz.quick.common.utils.FileUtil;
-import com.dongzz.quick.common.domain.ResponseVo;
-import com.dongzz.quick.tools.domain.ToolLocalFile;
-import com.dongzz.quick.tools.service.LocalFileService;
+import com.dongzz.quick.tools.domain.ToolCosConfig;
+import com.dongzz.quick.tools.domain.ToolCosFile;
+import com.dongzz.quick.tools.service.FileCosService;
+import com.dongzz.quick.tools.utils.CosUtil;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,44 +18,66 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.util.List;
 
 /**
- * 本地上传
+ * 腾讯云上传
  */
 @RestController
-@RequestMapping("/api/local/files")
-@Api(tags = "工具：本地存储", value = "本地上传相关接口")
-public class LocalFileController extends BaseController {
+@RequestMapping("/api/cos/files")
+@Api(tags = "工具：腾讯云存储", value = "腾讯云上传相关接口")
+public class FileCosController extends BaseController {
 
     @Autowired
-    private LocalFileService fileService; // 本地上传
+    private FileCosService fileService;
 
     /**
-     * 本地上传
+     * 保存配置
      */
-    @PostMapping
-    @ApiOperation(value = "本地上传", notes = "本地上传")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "file", value = "单个文件", dataType = "file", paramType = "body", required = true)
-    })
-    public ResponseVo upload(@RequestParam("file") MultipartFile file, @RequestParam("name") String name) throws Exception {
-        ToolLocalFile localFile = fileService.addFile(file, name);
-        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), localFile);
+    @PutMapping("/config")
+    @ApiOperation(value = "保存配置", notes = "保存配置")
+    public ResponseVo config(@ApiParam(name = "配置实体", value = "配置实体", required = true) @RequestBody ToolCosConfig config) throws Exception {
+        fileService.config(config);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
 
     /**
-     * 文件下载
+     * 查询配置
+     */
+    @GetMapping("/config")
+    @ApiOperation(value = "查询配置", notes = "查询配置")
+    public ResponseVo find() throws Exception {
+        ToolCosConfig config = fileService.find();
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), config);
+    }
+
+    /**
+     * 腾讯云上传
+     */
+    @PostMapping
+    @ApiOperation(value = "腾讯云上传", notes = "腾讯云上传")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "file", value = "单个文件", dataType = "file", paramType = "body", required = true)
+    })
+    public ResponseVo upload(MultipartFile file) throws Exception {
+        ToolCosConfig config = fileService.find();
+        ToolCosFile cosFile = fileService.addFile(file, config);
+        return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), cosFile);
+    }
+
+    /**
+     * 下载
      */
     @GetMapping("/download")
     @ApiOperation(value = "下载", notes = "下载")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "path", value = "存储路径", dataType = "string", paramType = "query", required = true),
-            @ApiImplicitParam(name = "fileName", value = "文件名", dataType = "string", paramType = "query", required = true)
+            @ApiImplicitParam(name = "id", value = "ID", dataType = "string", paramType = "query", required = true)
     })
-    public void download(String path, String fileName) throws Exception {
-        FileUtil.download(path, fileName, response);
+    public void download(String id) throws Exception {
+        ToolCosConfig config = fileService.find();
+        ToolCosFile file = fileService.selectByPk(id);
+        CosUtil.download(config, file.getCachePath(), response);
     }
 
     /**
-     * 删除文件
+     * 删除
      */
     @DeleteMapping("/{id}")
     @ApiOperation(value = "删除文件", notes = "删除文件")
@@ -62,16 +85,17 @@ public class LocalFileController extends BaseController {
             @ApiImplicitParam(name = "id", value = "文件ID", dataType = "string", paramType = "path", required = true)
     })
     public ResponseVo delete(@PathVariable String id) throws Exception {
-        fileService.deleteFile(id);
+        ToolCosConfig config = fileService.find();
+        fileService.deleteFile(id, config);
         return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
 
     /**
-     * 修改文件
+     * 修改
      */
     @PutMapping
     @ApiOperation(value = "修改文件", notes = "修改文件")
-    public ResponseVo update(@ApiParam(name = "文件实体", value = "参数体", required = true) @RequestBody ToolLocalFile file) throws Exception {
+    public ResponseVo update(@ApiParam(name = "文件实体", value = "参数体", required = true) @RequestBody ToolCosFile file) throws Exception {
         fileService.updateFile(file);
         return new ResponseVo(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     }
@@ -91,13 +115,13 @@ public class LocalFileController extends BaseController {
     }
 
     /**
-     * 导出 Excel
+     * 导出
      */
     @GetMapping("/export")
     @ApiOperation(value = "导出", notes = "导出")
     public void export(@ApiIgnore VueTableRequest request) throws Exception {
         VueTableResponse vtp = fileService.findAll(request);
-        List<ToolLocalFile> files = (List<ToolLocalFile>) vtp.getData();
+        List<ToolCosFile> files = (List<ToolCosFile>) vtp.getData();
         fileService.download(files, response);
     }
 }

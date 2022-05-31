@@ -20,7 +20,13 @@ public class FileProperties {
     private ElPath mac;
     private ElPath linux;
     private ElPath windows;
+    private ElMapping mapping;
 
+    /**
+     * 根据操作系统 获取上传路径
+     *
+     * @return
+     */
     public ElPath getPath() {
         String os = System.getProperty("os.name");
         if (os.toLowerCase().startsWith(Constants.WIN)) {
@@ -31,11 +37,31 @@ public class FileProperties {
         return linux;
     }
 
+    /**
+     * 获取 MVC 静态资源访问映射
+     *
+     * @return
+     */
+    public ElMapping getMapping() {
+        return mapping;
+    }
+
+
+    /**
+     * 上传路径
+     */
     @Data
     public static class ElPath {
+        private String path; // 文件上传
+        private String avatar; // 头像上传
+    }
 
-        private String path; // 上传
-
-        private String avatar; // 头像
+    /**
+     * MVC 静态资源访问映射
+     */
+    @Data
+    public static class ElMapping {
+        private String path;
+        private String avatar;
     }
 }

@@ -16,7 +16,7 @@ import com.dongzz.quick.tools.dao.ToolCosConfigMapper;
 import com.dongzz.quick.tools.dao.ToolCosFileMapper;
 import com.dongzz.quick.tools.domain.ToolCosConfig;
 import com.dongzz.quick.tools.domain.ToolCosFile;
-import com.dongzz.quick.tools.service.CosFileService;
+import com.dongzz.quick.tools.service.FileCosService;
 import com.dongzz.quick.tools.utils.CosUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -33,7 +33,7 @@ import java.util.List;
 
 @Service
 @CacheConfig(cacheNames = "cos")
-public class CosFileServiceImpl extends BaseMybatisServiceImpl<ToolCosFile> implements CosFileService {
+public class FileCosServiceImpl extends BaseMybatisServiceImpl<ToolCosFile> implements FileCosService {
 
     @Autowired
     private ToolCosConfigMapper cosConfigMapper;
@@ -67,11 +67,11 @@ public class CosFileServiceImpl extends BaseMybatisServiceImpl<ToolCosFile> impl
         }
         try {
             ToolCosFile tcf = new ToolCosFile();
-            tcf.setId(vo.getFileUuid());
+            tcf.setId(vo.getFileMd5());
             tcf.setName(vo.getFileName());
             tcf.setCacheName(vo.getCacheName());
             tcf.setCachePath(vo.getCachePath());
-            tcf.setPath("/" + vo.getCachePath());
+            tcf.setPath(vo.getFilePath());
             tcf.setBucket(config.bucket());
             tcf.setUrl(vo.getFileUrl());
             tcf.setContentType(vo.getContentType());

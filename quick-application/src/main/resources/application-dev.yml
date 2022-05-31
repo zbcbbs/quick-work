@@ -66,13 +66,17 @@ file:
     path: /home/quick/file/
     avatar: /home/quick/avatar/
   windows:
-    path: D:/quick/file/
-    avatar: D:/quick/avatar/
+    path: D:\quick\file\
+    avatar: D:\quick\avatar\
   # 文件大小 /M
   maxSize: 100
   avatarMaxSize: 5
   # 访问域名
   domain: http://127.0.0.1:8090
+  # 静态资源访问映射
+  mapping:
+    path: /file
+    avatar: /avatar
 
 # swagger knife4j
 knife4j:

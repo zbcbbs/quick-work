@@ -12,8 +12,8 @@ import java.io.Serializable;
 @Setter
 public class UploadVo implements Serializable {
 
-    private String fileMd5;
-    private String fileUuid;
+    private String fileMd5; // MD5
+    private String fileUuid; // uuid
     private String fileName; // 源名称
     private String cacheName; // 存储名称
     private String cachePath; // 存储路径
@@ -23,5 +23,6 @@ public class UploadVo implements Serializable {
     private String fileType; // 类型
     private String fileExt; // 扩展名
     private String fileUrl; // 访问路径
+    private String filePath; // 相对路径
 
 }

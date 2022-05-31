@@ -82,11 +82,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         FileProperties.ElPath path = fileProperties.getPath();
+        FileProperties.ElMapping mapping = fileProperties.getMapping();
         // 磁盘地址
-        String avatarUtl = "file:" + path.getAvatar().replace("\\", "/");
-        String pathUtl = "file:" + path.getPath().replace("\\", "/");
-        registry.addResourceHandler("/avatar/**").addResourceLocations(avatarUtl).setCachePeriod(0);
-        registry.addResourceHandler("/file/**").addResourceLocations(pathUtl).setCachePeriod(0);
+        String avatarUrl = "file:" + path.getAvatar();
+        String pathUrl = "file:" + path.getPath();
+
+        registry.addResourceHandler(mapping.getAvatar() + "/**").addResourceLocations(avatarUrl).setCachePeriod(0);
+        registry.addResourceHandler(mapping.getPath() + "/**").addResourceLocations(pathUrl).setCachePeriod(0);
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/").setCachePeriod(0); // css，js，image
     }
 

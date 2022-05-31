@@ -30,9 +30,6 @@ public class CosUtil {
     public static UploadVo upload(MultipartFile file, ToolCosConfig config) {
         // 本地临时存储
         File temp = FileUtil.toFile(file);
-        COSClient client = createClient(config);
-        String bucketName = config.bucket();
-        // 信息
         String fileOriginalName = file.getOriginalFilename();
         String fileExtName = FileUtil.getExtensionName(fileOriginalName);
         long size = file.getSize();
@@ -40,9 +37,12 @@ public class CosUtil {
         String fileType = FileUtil.getFileType(fileExtName);
         String dateDir = FileUtil.getPath();
         String key = fileType + dateDir + uuid + "." + fileExtName; // 存储标记
-        key = key.replace("\\", "/");
-        String url = config.getDomain() + "/" + key;
-        PutObjectRequest request = new PutObjectRequest(bucketName, key, temp);
+        String cosKey = key.replace("\\", "/");
+        String filePath = "/" + cosKey; // 相对路径
+
+        COSClient client = createClient(config);
+        String bucketName = config.bucket();
+        PutObjectRequest request = new PutObjectRequest(bucketName, cosKey, temp);
         request.setStorageClass(StorageClass.Standard_IA); // 设置存储类型 默认是标准(Standard)，低频(standard_ia)
         try {
             // 上传
@@ -52,15 +52,17 @@ public class CosUtil {
 
             UploadVo vo = new UploadVo();
             vo.setFileUuid(uuid);
+            vo.setFileMd5(FileUtil.getMd5(temp));
             vo.setFileName(fileOriginalName);
             vo.setCacheName(uuid + "." + fileExtName);
-            vo.setCachePath(key);
-            vo.setFileUrl(url);
+            vo.setCachePath(cosKey);
+            vo.setFileUrl(config.getDomain() + filePath);
             vo.setContentType(file.getContentType());
             vo.setFileType(fileType);
             vo.setSize(size);
             vo.setFileSize(FileUtil.getSize(size));
             vo.setFileExt(fileExtName);
+            vo.setFilePath(filePath);
             return vo;
         } catch (Exception e) {
             e.printStackTrace();

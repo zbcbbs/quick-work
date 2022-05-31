@@ -8,7 +8,6 @@ import cn.hutool.extra.template.TemplateUtil;
 import com.dongzz.quick.common.exception.ServiceException;
 import com.dongzz.quick.common.utils.CacheKey;
 import com.dongzz.quick.common.utils.RedisUtil;
-import com.dongzz.quick.common.utils.SecurityUtil;
 import com.dongzz.quick.tools.service.CodeService;
 import com.dongzz.quick.tools.service.MailService;
 import com.dongzz.quick.tools.service.dto.MailDto;
@@ -37,7 +36,7 @@ public class CodeServiceImpl implements CodeService {
     @Override
     public void sendEmailCode(String email) throws Exception {
         try {
-            // 邮件模板
+            // 模板引擎
             TemplateEngine engine = TemplateUtil.createEngine(new TemplateConfig("templates", TemplateConfig.ResourceMode.CLASSPATH));
             Template template = engine.getTemplate("email/email.ftl");
             Map<String, Object> data = new HashMap<>();
@@ -47,14 +46,13 @@ public class CodeServiceImpl implements CodeService {
             MailDto mail = new MailDto();
             mail.setSubject("一封来自暴走编程的验证邮件");
             mail.setContent(content);
-            mail.setUserId(SecurityUtil.getCurrentUserId());
             mail.setToUsers(email);
             mailService.sendSimple(mail, mailService.find());
             // 缓存
             redisUtil.set(CacheKey.CODE_EMAIL + email, code, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.debug("Email Verification Code Error:", e);
-            throw new ServiceException("邮件验证码发送异常！");
+            throw new ServiceException("邮箱验证码发送异常！");
         }
     }
 

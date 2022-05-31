@@ -1,6 +1,6 @@
 package com.dongzz.quick.tools.service.impl;
 
-import cn.hutool.extra.mail.Mail;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.extra.mail.MailAccount;
 import cn.hutool.extra.mail.MailUtil;
 import com.dongzz.quick.common.base.BaseMybatisServiceImpl;
@@ -9,6 +9,7 @@ import com.dongzz.quick.common.plugin.vuetables.VueTableHandler;
 import com.dongzz.quick.common.plugin.vuetables.VueTableRequest;
 import com.dongzz.quick.common.plugin.vuetables.VueTableResponse;
 import com.dongzz.quick.common.utils.SecurityUtil;
+import com.dongzz.quick.common.utils.StringUtil;
 import com.dongzz.quick.tools.dao.ToolMailConfigMapper;
 import com.dongzz.quick.tools.domain.ToolMail;
 import com.dongzz.quick.tools.dao.ToolMailMapper;
@@ -58,10 +59,8 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
     public ToolMailConfig config(ToolMailConfig config) throws Exception {
         Integer id = config.getId();
         if (null != id) {
-            // 修改
             mailConfigMapper.updateByPrimaryKeySelective(config);
         } else {
-            // 新增
             config.setId(1);
             mailConfigMapper.insertSelective(config);
         }
@@ -76,43 +75,41 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
     }
 
     @Override
-    public void send(MailDto mailDto) throws Exception {
-        String toUsers = mailDto.getToUsers(); // 收件人邮箱，支持多个 ';'分割
+    public void send(MailDto mail) throws Exception {
+        String toUsers = mail.getToUsers(); // 收件人邮箱，支持多个 ';'分割
         if (StringUtils.isBlank(toUsers)) {
             throw new ServiceException("收件人不能为空");
         }
         toUsers = toUsers.replace(" ", "").replace("；", ";");
-        String[] tos = toUsers.split(";");
+        String[] tos = StringUtil.split(toUsers, ";");
 
         for (String to : tos) {
             int status = 1;
             try {
-                // 创建邮件并发送
                 MimeMessage message = javaMailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                 helper.setFrom(user + "<" + mailServer + ">");
                 helper.setTo(to);
-                helper.setSubject(mailDto.getSubject());
-                helper.setText(mailDto.getContent(), true);
+                helper.setSubject(mail.getSubject());
+                helper.setText(mail.getContent(), true);
                 javaMailSender.send(message);
             } catch (Exception e) {
                 status = 0;
-                logger.debug("向 " + to + " 发送邮件失败！", e);
+                logger.debug("向 " + to + " 发送邮件异常！", e);
             } finally {
-                // 记录发送结果
-                mailMapper.insertMailTo(mailDto.getId(), to, status);
+                mailMapper.insertMailTo(mail.getId(), to, status);
             }
         }
     }
 
     @Override
-    public void send(MailDto mailDto, ToolMailConfig config) throws Exception {
-        String toUsers = mailDto.getToUsers();
+    public void send(MailDto mail, ToolMailConfig config) throws Exception {
+        String toUsers = mail.getToUsers();
         if (StringUtils.isBlank(toUsers)) {
             throw new ServiceException("收件人不能为空");
         }
         toUsers = toUsers.replace(" ", "").replace("；", ";");
-        String[] tos = toUsers.split(";");
+        String[] tos = StringUtil.split(toUsers, ";");
 
         MailAccount account = new MailAccount();
         String user = config.getFromUser().split("@")[0];
@@ -128,30 +125,24 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
         for (String to : tos) {
             int status = 1;
             try {
-                Mail.create(account)
-                        .setTos(to)
-                        .setTitle(mailDto.getSubject())
-                        .setContent(mailDto.getContent())
-                        .setHtml(true)
-                        .setUseGlobalSession(false)
-                        .send();
+                MailUtil.send(account, to, mail.getSubject(), mail.getContent(), true);
             } catch (Exception e) {
                 status = 0;
-                logger.debug("向 " + to + " 发送邮件失败！", e);
+                logger.debug("向 " + to + " 发送邮件异常！", e);
             } finally {
-                mailMapper.insertMailTo(mailDto.getId(), to, status);
+                mailMapper.insertMailTo(mail.getId(), to, status);
             }
         }
     }
 
     @Override
-    public void sendSimple(MailDto mailDto, ToolMailConfig config) throws Exception {
-        String toUsers = mailDto.getToUsers();
+    public void sendSimple(MailDto mail, ToolMailConfig config) throws Exception {
+        String toUsers = mail.getToUsers();
         if (StringUtils.isBlank(toUsers)) {
             throw new ServiceException("收件人不能为空");
         }
         toUsers = toUsers.replace(" ", "").replace("；", ";");
-        String[] tos = toUsers.split(";");
+        ArrayList<String> tos = CollUtil.newArrayList(StringUtil.split(toUsers, ";"));
 
         MailAccount account = new MailAccount();
         String user = config.getFromUser().split("@")[0];
@@ -163,14 +154,8 @@ public class MailServiceImpl extends BaseMybatisServiceImpl<ToolMail> implements
         account.setFrom(config.getUser() + "<" + config.getFromUser() + ">");
         account.setSslEnable(true); // SSL方式发送
         account.setStarttlsEnable(true); // STARTTLS安全连接
+        MailUtil.send(account, tos, mail.getSubject(), mail.getContent(), true);
 
-        Mail.create(account)
-                .setTos(tos)
-                .setTitle(mailDto.getSubject())
-                .setContent(mailDto.getContent())
-                .setHtml(true)
-                .setUseGlobalSession(false)
-                .send();
     }
 
     @Override

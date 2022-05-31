@@ -29,9 +29,6 @@ public class CodeController extends BaseController {
 
     /**
      * 邮箱验证码
-     *
-     * @return
-     * @throws Exception
      */
     @PostMapping("/email")
     @ApiOperation("邮箱验证码")

@@ -11,7 +11,7 @@ import com.dongzz.quick.modules.mnt.service.DatabaseService;
 import com.dongzz.quick.common.utils.Page;
 import com.dongzz.quick.modules.mnt.utils.SqlUtil;
 import com.dongzz.quick.tools.domain.ToolLocalFile;
-import com.dongzz.quick.tools.service.LocalFileService;
+import com.dongzz.quick.tools.service.FileLocalService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,7 +36,7 @@ public class DatabaseController extends BaseController {
     @Autowired
     private DatabaseService databaseService;
     @Autowired
-    private LocalFileService fileService;
+    private FileLocalService fileService;
 
     /**
      * 添加

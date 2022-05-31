@@ -51,7 +51,7 @@ public interface ToolMailMapper extends BaseMybatisMapper<ToolMail> {
     List<ToolMail> selectAllMails(@Param("params") Map<String, Object> params, @Param("offset") Integer offset, @Param("limit") Integer limit) throws Exception;
 
     /**
-     * 查询邮件发送详情
+     * 查询邮件发送记录
      *
      * @param mailId 邮件ID
      * @return

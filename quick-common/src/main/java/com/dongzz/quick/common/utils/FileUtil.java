@@ -16,7 +16,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -71,14 +70,12 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
      * MultipartFile转File
      */
     public static File toFile(MultipartFile multipartFile) {
-        // 获取文件名
         String fileName = multipartFile.getOriginalFilename();
-        // 获取文件后缀
-        String prefix = "." + getExtensionName(fileName);
+        String suffix = "." + getExtensionName(fileName);
         File file = null;
         try {
             // 用uuid作为文件名，防止生成的临时文件重复
-            file = new File(SYS_TEM_DIR + IdUtil.simpleUUID() + prefix);
+            file = new File(SYS_TEM_DIR + IdUtil.simpleUUID() + suffix);
             // MultipartFile to File
             multipartFile.transferTo(file);
         } catch (IOException e) {
@@ -119,13 +116,13 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     public static String getSize(long size) {
         String resultSize;
         if (size / GB >= 1) {
-            //如果当前Byte的值大于等于1GB
+            // 若当前Byte的值大于等于1GB
             resultSize = DF.format(size / (float) GB) + "GB   ";
         } else if (size / MB >= 1) {
-            //如果当前Byte的值大于等于1MB
+            // 若当前Byte的值大于等于1MB
             resultSize = DF.format(size / (float) MB) + "MB   ";
         } else if (size / KB >= 1) {
-            //如果当前Byte的值大于等于1KB
+            // 若当前Byte的值大于等于1KB
             resultSize = DF.format(size / (float) KB) + "KB   ";
         } else {
             resultSize = size + "B   ";
@@ -136,7 +133,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     /**
      * inputStream 转 File
      */
-    static File inputStreamToFile(InputStream ins, String name) {
+    static File inputStreamToFile(InputStream is, String name) {
         File file = new File(SYS_TEM_DIR + name);
         if (file.exists()) {
             return file;
@@ -147,14 +144,14 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
             int bytesRead;
             int len = 8192;
             byte[] buffer = new byte[len];
-            while ((bytesRead = ins.read(buffer, 0, len)) != -1) {
+            while ((bytesRead = is.read(buffer, 0, len)) != -1) {
                 os.write(buffer, 0, bytesRead);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             CloseUtil.close(os);
-            CloseUtil.close(ins);
+            CloseUtil.close(is);
         }
         return file;
     }
@@ -186,7 +183,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     /**
      * 限制文件大小
      *
-     * @param maxSize 最大支持
+     * @param maxSize 最大支持 MB
      * @param size    实际大小
      */
     public static void checkSize(long maxSize, long size) {
@@ -292,7 +289,7 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
     /**
      * 获取日期路径
      *
-     * @return 日期路径 \2022\04\18\
+     * @return 日期路径
      */
     public static String getPath() {
         String date = DateUtil.getDate("yyyy-MM-dd", new Date());
@@ -307,15 +304,15 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
      * @return
      */
     public static UploadVo upload(MultipartFile file, String filePath) {
-        Date date = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddhhmmssS");
-        String name = getFileNameNoEx(file.getOriginalFilename());
-        String suffix = getExtensionName(file.getOriginalFilename());
-        String nowStr = "-" + format.format(date);
+        String fileExtName = getExtensionName(file.getOriginalFilename());
+        String fileType = FileUtil.getFileType(fileExtName);
+        long size = file.getSize();
+        String dateDir = FileUtil.getPath();
+        String uuid = IdUtil.simpleUUID();
         try {
             UploadVo vo = new UploadVo();
-            String fileName = name + nowStr + "." + suffix;
-            String path = filePath + fileName;
+            String fileDir = fileType + dateDir + uuid + "." + fileExtName;
+            String path = filePath + fileDir;
             // getCanonicalFile 可解析正确各种路径
             File dest = new File(path).getCanonicalFile();
             // 检测是否存在目录
@@ -325,15 +322,17 @@ public class FileUtil extends cn.hutool.core.io.FileUtil {
                 }
             }
             // 记录上传信息
+            vo.setFileUuid(uuid);
             vo.setFileMd5(getMd5(file.getInputStream()));
             vo.setFileName(file.getOriginalFilename());
-            vo.setCacheName(fileName);
+            vo.setCacheName(uuid + "." + fileExtName);
             vo.setCachePath(path);
             vo.setContentType(file.getContentType());
-            vo.setFileExt("." + suffix);
-            vo.setSize(file.getSize());
-            vo.setFileSize(getSize(file.getSize()));
-            vo.setFileType(getFileType(suffix));
+            vo.setFileExt(fileExtName);
+            vo.setSize(size);
+            vo.setFileSize(getSize(size));
+            vo.setFileType(fileType);
+            vo.setFilePath(File.separator + fileDir);
             // 执行上传
             file.transferTo(dest);
             return vo;
